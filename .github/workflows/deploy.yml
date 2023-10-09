@@ -18,6 +18,8 @@ jobs:
       # in plain text, use secrets instead.
       # MONGODB_USERNAME: user
       # MONGODB_PASSWORD: password
+      MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
+      MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
       PORT: 8080
     environment: testing
     runs-on: ubuntu-latest
