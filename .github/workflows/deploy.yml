@@ -1,0 +1,48 @@
+name: Deployment
+on:
+  push:
+    branches:
+      # - main
+      - dev
+# you can add env vars here at a very high level
+# it will be available to all jobs in the workflow
+# the value will be the same for all jobs
+env:
+  MONGO_DB_NAME: gha-demo
+jobs:
+  test:
+    # here we set environment variables only for the test job
+    env:
+      MONGODB_CLUSTER_ADDRESS: cluster0.abc123.mongodb.net
+      # instead of storing the username and password 
+      # in plain text, use secrets instead.
+      # MONGODB_USERNAME: user
+      # MONGODB_PASSWORD: password
+      PORT: 8080
+    environment: testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Code
+        uses: actions/checkout@v3
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-deps-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Run server
+        # using an envionrment variable in the action
+        run: npm start & npx wait-on http://127.0.0.1:$PORT
+      - name: Run tests
+        run: npm test
+      - name: Output information
+        # you can also use the env object to get the environment variables
+        run: echo "MONGODB_USERNAME=${{ env.MONGODB_USERNAME }}"
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output information
+        run: |        
+          echo ""
